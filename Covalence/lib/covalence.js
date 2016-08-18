@@ -29,9 +29,8 @@ changedData.on('value', function(pulledData) {
     atom.workspace.observeTextEditors(function(editor) {
         editor.setTextInBufferRange([
             [pulledData.val().rowToEdit, 0],
-            [pulledData.val().rowToEdit, 0]
+            [pulledData.val().rowToEdit, pulledData.val().rowLength]
         ], pulledData.val().lineData);
-        // editor.setText(pulledData.val().lineData)
     });
 });
 
@@ -72,8 +71,6 @@ export default {
     toggle() {
         // var myCursorLocation;
         var lineData;
-        // var currentRow = 0;
-        // var newRow = 0;
 
         atom.workspace.observeTextEditors(function(editor) {
             currentRow = editor.getCursorBufferPosition().row;
@@ -84,9 +81,12 @@ export default {
                 if (applyChange) {
                     newRow = editor.getCursorBufferPosition().row;
                     if (newRow !== currentRow) {
+                        console.log("Line Change. Current Row: " + currentRow + "New Row: " + newRow);
                         lineData = editor.lineTextForBufferRow(currentRow);
+                        console.log(lineData);
                         if (lineData) {
                             sendData(lineData, currentRow);
+                            console.log("data sent");
                         }
                     }
                 } else {
@@ -98,11 +98,11 @@ export default {
         function sendData(lineData, rowToEdit) {
             applyChange = false;
             firebase.database.INTERNAL.forceWebSockets();
-            firebase.database().ref("projects").update({
+            firebase.database().ref("projects").set({
                 "lineData": lineData,
-                "rowToEdit": rowToEdit
+                "rowToEdit": rowToEdit,
+                "rowLength": lineData.length
             });
-            lineData = "";
             atom.workspace.observeTextEditors(function(editor) {
                 currentRow = newRow;
             })
