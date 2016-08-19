@@ -29,8 +29,9 @@ changedData.on('value', function(pulledData) {
     atom.workspace.observeTextEditors(function(editor) {
         editor.setTextInBufferRange([
             [pulledData.val().rowToEdit, 0],
-            [pulledData.val().rowToEdit, pulledData.val().rowLength]
+            [pulledData.val().rowToEdit, 0]
         ], pulledData.val().lineData);
+        // editor.setText(pulledData.val().lineData)
     });
 });
 
@@ -71,22 +72,19 @@ export default {
     toggle() {
         var pageData;
         var lineData;
+        // var currentRow = 0;
+        // var newRow = 0;
 
         atom.workspace.observeTextEditors(function(editor) {
             currentRow = editor.getCursorBufferPosition().row;
             newRow = editor.getCursorBufferPosition().row;
-            editor.onDidChangeCursorPosition(function() {
-              console.log(lineData);
-              console.log("Change Registered");
+            editor.onDidChange(function() {
                 if (applyChange) {
                     newRow = editor.getCursorBufferPosition().row;
                     if (newRow !== currentRow) {
-                      console.log("Line Change. Current Row: " + currentRow + "New Row: " + newRow);
                         lineData = editor.lineTextForBufferRow(currentRow);
-                        console.log(lineData);
                         if (lineData) {
-                          sendData(lineData, currentRow);
-                          console.log("data sent");
+                            sendData(lineData, currentRow);
                         }
                     }
                 } else {
@@ -100,8 +98,7 @@ export default {
           firebase.database.INTERNAL.forceWebSockets();
           firebase.database().ref("projects").set({
               "lineData": lineData,
-              "rowToEdit": rowToEdit,
-              "rowLength": lineData.length
+              "rowToEdit": rowToEdit
           });
           atom.workspace.observeTextEditors(function(editor) {
             currentRow = newRow;
