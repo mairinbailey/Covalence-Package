@@ -60,19 +60,21 @@ export default {
     },
 
     toggle() {
-        var pageData;
-        console.log('Covalence was toggled!');
-        atom.workspace.observeTextEditors(function(editor) {
-            pageData = editor.getText();
-        });
-
-        function sendData(pageData) {
-            firebase.database.INTERNAL.forceWebSockets();
-            console.log('rawr');
-            firebase.database().ref("projects").set({
-                "pageData": pageData
+            var pageData;
+            console.log('Covalence was toggled!');
+            atom.workspace.observeTextEditors(function(editor) {
+                editor.onDidChange(function() {
+                    pageData = editor.getText();
+                    sendData(pageData);
+                });
             });
+
+            function sendData(pageData) {
+                // firebase.database.INTERNAL.forceWebSockets();
+                console.log('rawr');
+                firebase.database().ref("projects").set({
+                    "pageData": pageData
+                });
+            }
         }
-        sendData(pageData);
-    }
 };
